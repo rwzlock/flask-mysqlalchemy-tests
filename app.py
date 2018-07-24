@@ -21,7 +21,7 @@ app = Flask(__name__)
 #################################################
 
 # The database URI
-app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root@127.0.0.1:3306/db"
+app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root@127.0.0.1:3306/db" 
 
 db = SQLAlchemy(app)
 
@@ -89,12 +89,27 @@ def database():
     }
     return jsonify(plot_trace)
 
-@app.route("/insert")
+@app.route("/insert", methods=["GET","POST"])
 def insert():
     """Json."""
-    db.session.insert(Test).\
-            values(name="Giles", age=23, email="pokechu5@gmail.com")
-    return("Add attempted.")
+    if request.method == 'POST':
+        print(request)
+
+        if request.files.get('text'):
+            # read the file
+            file = request.files['file']
+
+            # read the filename
+            filename = file.filename
+
+            # Save the file to the uploads folder
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            return "Image Saved!"
+    test = Test(name="Giles", age=23, email="pokechu5@gmail.com")
+    db.session.add(test)
+    db.session.commit()
+
+    return render_template("form.html")
     
 if __name__ == '__main__':
     app.run(debug=True)
